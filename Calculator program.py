@@ -90,13 +90,25 @@ class Main:
 class Operations:
     def __init__(self):
         Function_class.Toplevel_frame(self)
+        self.window.title('Calculator')
         
-        self.text1 = tkinter.Label(self.toplevel_frame,
-                                   text="Operations")
-        self.text1.grid(row=0, column=0)
+        # Input and output text
+        self.textbox = tkinter.Text(self.toplevel_frame,
+                                    height=5,
+                                    width=30,
+                                    selectborderwidth=0,
+                                    spacing1=5,
+                                    wrap=tkinter.WORD,
+                                    font=(("Arial"), 20))
+        self.textbox.grid(row=1, columnspan=2)
+        
+        # Calculator buttons
+        
+               
 
 class Help:
     def __init__(self):
+        # Create new window
         Function_class.Toplevel_frame(self)
         
         self.text1 = tkinter.Label(self.toplevel_frame,
@@ -135,7 +147,7 @@ class Exit:
 
 
 root = tkinter.Tk()
-root.title ("Calculator")
+root.title ("Main menu")
 run = Main(root)
 root.grid_columnconfigure(0, weight=1)
 root.grid_rowconfigure(0, weight=1)
