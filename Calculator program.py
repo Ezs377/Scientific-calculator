@@ -11,44 +11,32 @@ import sys
 class Function_class:
 
     # Function to create buttons
-    def create_button(source,
-                      label,
-                      hgt,
-                      wdt,
-                      pad_x,
-                      pad_y,
-                      color,
-                      font_color,
-                      fnt,
-                      border_depth,
-                      function,
-                      active_bg):
-        return tkinter.Button(source,
-                              text=label,
-                              height=hgt,
-                              width=wdt,
-                              padx=pad_x,
-                              pady=pad_y,
-                              bg=color,
-                              fg=font_color,
-                              font=fnt,
-                              bd=border_depth,
-                              relief=tkinter.RAISED,
+    def create_button(source,label,hgt,wdt,pad_x,pad_y,color,
+                      font_color,fnt,border_depth,function,active_bg):
+        
+        return tkinter.Button(source,text=label,height=hgt,width=wdt,
+                              padx=pad_x,pady=pad_y,bg=color,fg=font_color,
+                              font=fnt,bd=border_depth,relief=tkinter.RAISED,
                               activebackground=active_bg,
                               command=function)
-
-    # To create a toplevel window
-    def Toplevel_frame(self):
-        self.window = tkinter.Toplevel()  # Create new window
-
-        # Create frame
-        self.toplevel_frame = (self.window)
-        self.toplevel_frame.grid()
-
-
+    
+    # Function to create exit button in new windows
+    def exit_button(source,row_no, name, window):
+        
+        exit = Function_class.create_button(source,"Back",0,0,5,10,
+                      "#ff0000","#f0f0f0",(("Arial bold"), 10),
+                      1,lambda:window.destroy(),
+                      "#b30000")
+        
+        exit.grid(row=row_no, column=0,
+                         sticky=tkinter.S+tkinter.W)
+        
+        exit.bind("<Destroy>",
+                         lambda event:button_dict[name].config(state=tkinter.NORMAL))
+        
 # Main class
 class Main:
-
+    
     # init
     def __init__(self, source):
 
@@ -57,7 +45,10 @@ class Main:
         heading_bg = "#f2f2f2"
         button_bg = "#ffe0cc"
         font = (("Yu Gothic Medium"), 15)
-
+        button_no = ""
+        global button_dict
+        button_dict = {}
+        
         # Variables
         buttons = ["Operations", "Help", "Statistics",
                    "Recall", "Graph", "Exit"]
@@ -87,15 +78,15 @@ class Main:
 
         # Menu Buttons
         for index, name in enumerate(buttons):
-            self.generated_button = Function_class.create_button(self.frame,
-                                                                 name, 2, 13,
-                                                                 0,0,
-                                                                 button_bg,
-                                                                 "#000000",
-                                                                 font, 1,
-                                                                 functions[index],
-                                                                 "#ff8533")
-            self.generated_button.grid(row=rowno, column=columnno,
+            button_dict[name]= (Function_class.create_button(self.frame,
+                                                              name, 2, 13,
+                                                              0,0,
+                                                              button_bg,
+                                                              "#000000",
+                                                              font, 1,
+                                                              functions[index],
+                                                              "#ff8533"))
+            button_dict[name].grid(row=rowno, column=columnno,
                                        sticky=tkinter.NSEW,
                                        pady=5,
                                        padx=5)
@@ -103,16 +94,21 @@ class Main:
             if columnno == 2:
                 columnno = 0
                 rowno += 1
-
+            
 class Operations:
     def __init__(self):
-        state = "on"
-        Main.
-        Function_class.Toplevel_frame(self)
-        self.window.title('Calculator')
+        # This disables the corresponding button in the main menu
+        button_dict["Operations"].config(state=tkinter.DISABLED)
+        
+        # Create window and frame
+        self.operation_window = tkinter.Toplevel()
+        self.operation_window.title("Calculator")
+        
+        self.operation_frame = tkinter.Frame(self.operation_window)
+        self.operation_frame.grid()        
 
         # Input and output text
-        self.textbox = tkinter.Text(self.toplevel_frame,
+        self.textbox = tkinter.Text(self.operation_frame,
                                     height=5,
                                     width=30,
                                     selectborderwidth=0,
@@ -123,74 +119,106 @@ class Operations:
         
         # Calculator buttons
         
+        
         # Exit button
-        self.exit_button = Function_class.create_button(self.toplevel_frame,
-                                                        "Back",
-                                                        0,
-                                                        0,
-                                                        5,
-                                                        10,
-                                                        "#ff0000",
-                                                        "#f0f0f0",
-                                                        (("Arial bold"), 10),
-                                                        1,
-                                                        lambda:self.window.destroy(),
-                                                        "#b30000")
-        self.exit_button.grid(row=1, column=0,
-                              sticky=tkinter.S+tkinter.W)
-        self.exit_button.bind("<Destroy>", lambda event: print ("Closed"))
+        Function_class.exit_button(self.operation_frame,1,
+                                   "Operations", self.operation_window)
+        
 
 class Help:
     def __init__(self):
-        # Create new window
-        Function_class.Toplevel_frame(self)
-
-        self.text1 = tkinter.Label(self.toplevel_frame,
+               
+        # This disables the corresponding button in the main menu
+        button_dict["Help"].config(state=tkinter.DISABLED)
+        
+        # Create window and frame
+        self.Help_window = tkinter.Toplevel()
+        self.Help_window.title('Help')
+        
+        self.Help_frame = tkinter.Frame(self.Help_window)
+        self.Help_frame.grid()
+        
+        self.text1 = tkinter.Label(self.Help_frame,
                                    text="Help")
         self.text1.grid(row=0, column=0)
+        
+        # Exit button
+        Function_class.exit_button(self.Help_frame,1,
+                                   "Help", self.Help_window)        
 
 
 class Statistics:
     def __init__(self):
-        Function_class.Toplevel_frame(self)
-
-        self.text1 = tkinter.Label(self.toplevel_frame,
+        # This disables the corresponding button in the main menu
+        button_dict["Statistics"].config(state=tkinter.DISABLED)
+        
+        # Create window and frame
+        self.statistic_window = tkinter.Toplevel()
+        self.statistic_window.title("Statistics")
+        
+        self.statistic_frame = tkinter.Frame(self.statistic_window)
+        self.statistic_frame.grid()   
+        
+        self.text1 = tkinter.Label(self.statistic_frame,
                                    text="Statistics")
         self.text1.grid(row=0, column=0)
-
+        
+        # Exit button
+        Function_class.exit_button(self.statistic_frame,1,
+                                   "Statistics",self.statistic_window)
 
 class Recall:
     def __init__(self):
-        Function_class.Toplevel_frame(self)
-
-        self.text1 = tkinter.Label(self.toplevel_frame,
+        # This disables the corresponding button in the main menu
+        button_dict["Recall"].config(state=tkinter.DISABLED)
+        
+        # Create window and frame
+        self.recall_window = tkinter.Toplevel()
+        self.recall_window.title("History")
+        
+        self.recall_frame = tkinter.Frame(self.recall_window)
+        self.recall_frame.grid()   
+        
+        self.text1 = tkinter.Label(self.recall_frame,
                                    text="Recall")
         self.text1.grid(row=0, column=0)
+        
+        # Exit button
+        Function_class.exit_button(self.recall_frame,1,
+                                   "Recall", self.recall_window)
 
 
 class Graph:
     def __init__(self):
-        Function_class.Toplevel_frame(self)
-
-        self.text1 = tkinter.Label(self.toplevel_frame,
-                                   text="Graph")
+        # This disables the corresponding button in the main menu
+        button_dict["Graph"].config(state=tkinter.DISABLED)
+        
+        # Create window and frame
+        self.graph_window = tkinter.Toplevel()
+        self.graph_window.title("Graph")
+        
+        self.graph_frame = tkinter.Frame(self.graph_window)
+        self.graph_frame.grid()   
+        
+        self.text1 = tkinter.Label(self.graph_frame,
+                                   text="graph")
         self.text1.grid(row=0, column=0)
+        
+        # Exit button
+        Function_class.exit_button(self.graph_frame,1,
+                                   "Graph", self.graph_window)
 
 
 class Exit:
     # Exit program
     def __init__(self):
-        self.test()
-
-    def test(self):
         sys.exit()
-
 
 # Main routine
 if __name__ == "__main__":
     root = tkinter.Tk()
     root.title("Main menu")
-    run = Main(root)
+    main_class = Main(root)
     root.grid_columnconfigure(0, weight=1)
     root.grid_rowconfigure(0, weight=1)
     root.mainloop()
