@@ -37,6 +37,8 @@ class Function_class:
     # Function to allocate buttons for a calculator menu
     def calc_buttons():
         button_list = []
+        for no in range (0, 10):
+            button_list.append (str(no))
         
         operation_dict = {'add':'+', 'minus':'-', 'divide':'\u00f7',
                           'times':'x', 'equals':'=', 'power':'^',
@@ -49,11 +51,10 @@ class Function_class:
                         'inversesin':'sin'+'\u207b'+'\u00b9 ',
                         'inversetan':'tan'+'\u207b'+'\u00b9 ',
                         'inversecos':'cos'+'\u207b'+'\u00b9 ',
-                        'percent':'\u0025'}
-
-        print (button_list)
-        print (operation_dict)
-        print (symbols_dict)
+                        'percent':'\u0025',
+                        'clear':"AC",
+                        "plusminus":"+/-"}
+        
 
 # Main class
 class Main:
@@ -65,6 +66,7 @@ class Main:
         background = "#3399ff"
         heading_bg = "#f2f2f2"
         button_bg = "#ffe0cc"
+        disabled_bg = "#33cc33"
         font = (("Yu Gothic Medium"), 15)
         button_no = ""
         global button_dict
@@ -107,10 +109,13 @@ class Main:
                                                               font, 1,
                                                               functions[index],
                                                               "#ff8533"))
+            
             button_dict[name].grid(row=rowno, column=columnno,
                                        sticky=tkinter.NSEW,
                                        pady=5,
                                        padx=5)
+            
+            button_dict[name].config (disabledforeground=disabled_bg)
             columnno += 1
             if columnno == 2:
                 columnno = 0
@@ -121,9 +126,14 @@ class Operations:
     def __init__(self):
         # This disables the corresponding button in the main menu
         button_dict["Operations"].config(state=tkinter.DISABLED)
-
+        
+        # Import custom characters
         Function_class.calc_buttons()
-
+        
+        # Color and aesthetics
+        button_bg = "#f2f2f2"
+        button_fg = "#000000"
+        
         # Create window and frame
         self.operation_window = tkinter.Toplevel()
         self.operation_window.title("Calculator")
@@ -142,6 +152,12 @@ class Operations:
         self.textbox.grid(row=0, columnspan=2)
 
         # Calculator buttons
+        for name in calc_buttons.button_list():
+            self.temp_button = Function_class.create_button(self.operation_frame,
+                                                            name, 1, 1, 5, 5,
+                                                            button_bg, button_fg,
+                                                            ())
+        
 
         # Exit button
         Function_class.exit_button(self.operation_frame, 1,
