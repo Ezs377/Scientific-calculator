@@ -1,0 +1,11 @@
+For all digits, use the numeric keyboad
++  button = Addition
+-  button = Subtraction
+*  button = Multplication
+/  button = Divison
+.  button = Decimal dot
+(  button = Left bracket
+)  button = Right bracket
+enter  = Equals
+shift = Shift function
+alt = Alpha function

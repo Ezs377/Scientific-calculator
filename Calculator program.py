@@ -6,8 +6,6 @@ import math
 import sys
 
 # Class to hold custom functions
-
-
 class Function_class:
 
     # Function to create buttons
@@ -30,23 +28,27 @@ class Function_class:
 
         exit.grid(row=row_no,
                   sticky=tkinter.NSEW,
-                  columnspan=2)
+                  column=0)
 
         exit.bind("<Destroy>",
                          lambda event: button_dict[name].config(state=tkinter.NORMAL))
+        return exit
 
 
     # Function to allocate buttons for a calculator menu
     def create_row(button_list, name_list, row_no,
-                   frame, columnstart):
+                   frame, columnstart, function):
+        
+        # Variables
         to_be_added = []
         button_bg = "#f2f2f2"
         button_fg = "#000000"
         
+        # Import characters from character list
         for x in name_list:
             to_be_added.append(Characters.character_dict[x])
             
-        
+        # Create buttons, each with specific functions, and labels
         column_no = columnstart
         for index, name in enumerate(to_be_added):
             
@@ -54,16 +56,35 @@ class Function_class:
                              (frame,name, 0, 0,
                               button_bg, button_fg,
                               ("Arial 13 bold"), 1,
-                              lambda name=name:(name), "#cccccc"))
+                              function, "#cccccc"))
             button_list[index].grid(row=row_no,
                                   column=column_no,
                                   sticky=tkinter.NSEW)
             column_no += 1
             button_list[index].config(height=3,
                                       width=4)
-    def printout(button):
-        pass
+        
+    # To prinout from button to text
+    def printout(text, button, added_list):
+        added_list.append(button['text'])
+        try:
+            text.insert('insert', added_list[-1])
+        except:
+            text.insert('insert', '')
+    
+    # For buttons with specific values
+    def printout_true(textbox, text, added_list):
+        added_list.append(text)
+        try:
+            textbox.insert('insert', added_list[-1])
+        except:
+            text.insert('insert', '')
             
+    
+    def command_change(row, column_no,
+                       function):
+        row[column_no].config(command=function)
+
 # Import Unicode
 class Characters:
     character_dict = {'euler': "\u2107", 'pi': "\u03c0", 'squared': "\u00b2",
@@ -79,8 +100,16 @@ class Characters:
                       'squareroot': '\u221a', 'root': '\u02e3' + '\u221a',
                       'zero': '0', 'dot': '.', 1:'1', 2:'2', 3:'3',
                       4:'4', 5:'5', 6:'6', 7:'7', 8:'8', 9:'9',
-                      'convert':'F-D', 'shift':'Shift', 'alpha':'Alpha',
-                      'xsquared':'X'+"\u00b2"}
+                      'fdconvert':'F-D', 'shift':'Shift', 'alpha':'Alpha',
+                      'xsquared':'X'+"\u00b2",'fpconvert':'F-'+'\u0025',
+                      'dpconvert':'D-'+'\u0025'}
+    shift_characters = {'sin':character_dict['inversesin'],
+                        'cos':character_dict['inversecos'],
+                        'tan':character_dict['inversetan'],
+                        'squared':character_dict['squareroot'],
+                        'power':character_dict['root'],
+                        'pi':character_dict['euler'],
+                        'F-D':character_dict['fpconvert']}
 
 
 # Main class
@@ -162,6 +191,9 @@ class Operations:
         # Create window and frame
         self.operation_window = tkinter.Toplevel()
         self.operation_window.title("Calculator")
+        
+        # Disable resizing
+        self.operation_window.resizable(0, 0)
 
         self.operation_frame = tkinter.Frame(self.operation_window)
         self.operation_frame.grid()
@@ -181,6 +213,8 @@ class Operations:
                                     wrap=tkinter.WORD,
                                     font=(("Arial"), 20))
         self.textbox.grid(row=0, columnspan=7)
+        self.textbox.focus()
+
 
         # Calculator buttons
         self.row1 = []
@@ -188,60 +222,130 @@ class Operations:
         self.row3 = []
         self.row4 = []
         self.row5 = []
+        self.added_list = []
         
         # Row 1
-        self.namelist = ['clear', 'delete', 'plusminus', 'add',
-                    'convert', 'shift', 'alpha']
+        self.namelist = ['clear', 'delete', 'factorial', 'add',
+                    'fdconvert', 'shift', 'alpha']
         Function_class.create_row(self.row1, self.namelist, 1,
-                                  self.operation_frame,0)
+                                  self.operation_frame,0,lambda:None)
         
+        for index, button in enumerate(self.row1):
+            button.config(
+                command=lambda index=index:Function_class.printout(
+                    self.textbox, self.row1[index], self.added_list))
+        
+        
+        Function_class.command_change(self.row1, 0,
+                                      lambda:self.clear_all())
+        Function_class.command_change(self.row1, 1,
+                                      lambda:self.delete())
+        
+        '''TO DO NEXT: SHIft, ALPHA'''
         # Row 2
         self.namelist = [7, 8, 9, 'minus','sin','cos',
                              'tan']
         Function_class.create_row(self.row2, self.namelist, 2,
-                                  self.operation_frame,0)
+                                  self.operation_frame,0,lambda:None)
         
+        for index, button in enumerate(self.row2):
+            button.config(
+                command=lambda index=index:Function_class.printout(
+                    self.textbox, self.row2[index], self.added_list))        
         # Row 3
         self.namelist = [4,5,6,'times','log', 'ln','pi']
         Function_class.create_row(self.row3, self.namelist, 3,
-                                  self.operation_frame,0)  
+                                  self.operation_frame,0,lambda:None)  
         
+        for index, button in enumerate(self.row3):
+            button.config(
+                command=lambda index=index:Function_class.printout(
+                    self.textbox, self.row3[index], self.added_list))        
         # Row 4
         self.namelist = [1,2,3,'divide', 'xsquared','power'] 
         Function_class.create_row(self.row4, self.namelist, 4,
-                                  self.operation_frame,0)   
+                                  self.operation_frame,0,lambda:None)
+        
+        for index, button in enumerate(self.row4):
+            button.config(
+                command=lambda index=index:Function_class.printout(
+                    self.textbox, self.row4[index],self.added_list))   
+        
+        self.row4[4].config(
+            command=lambda:Function_class.printout_true(
+                self.textbox, Characters.character_dict['squared'],
+                self.added_list))
         
         # Row 5
         self.namelist = ['zero','dot','lbracket','rbracket']
         Function_class.create_row(self.row5, self.namelist, 5,
-                                  self.operation_frame,2) 
+                                  self.operation_frame,2,lambda:None)
+        
+        for index, button in enumerate(self.row5):
+            button.config(
+                command=lambda index=index:Function_class.printout(
+                    self.textbox, self.row5[index],self.added_list))      
         
         # Equals button
         self.equal_button = (Function_class.create_button
                              (self.operation_frame,'=', 0, 0,
                               button_bg, button_fg,
                               ("Arial"), 1,
-                              lambda: print ("hello"), "#cccccc"))
+                              lambda:None, "#cccccc"))
+        
         self.equal_button.grid (row=4,rowspan=2, column=6,
                                 sticky=tkinter.NSEW)
+        
+        self.equal_button.config(
+            command=lambda:self.equals())            
         
         # Scrollbar
         scrollbar = tkinter.Scrollbar(self.operation_frame)
         self.textbox.config(yscrollcommand=scrollbar.set)
         scrollbar.config(command=self.textbox.yview)
         
-        # Interactivity with textbox
-        self.textbox.insert
         
         # Exit button
-        Function_class.exit_button(self.operation_frame, 5,
-                                   "Operations", self.operation_window)
-
-
+        self.exit_button = Function_class.exit_button(
+            self.operation_frame, 5,
+            "Operations", self.operation_window)
+        self.exit_button.grid(columnspan=2)
+        
+        
+    # Calculating function
+    def equals(self):
+        print (self.added_list)
+        
+    # Key bindings
+    def bindings(self):
+        pass
+    
+    # Clear screen
+    def clear_all(self):
+        self.textbox.delete('1.0', 'end')
+        self.added_list = []
+    
+    # Backspace
+    def delete(self):
+        try:
+            self.added_list.pop()
+        except:
+            pass
+        self.textbox.delete('end-2c')
+        
+        
 # User guide
 class Help:
     def __init__(self):
-
+        self.file = open('Help.txt', 'r')
+        self.help_file = (self.file.read())
+        
+        self.file2 = open('Left help.txt', 'r')
+        self.l_help = (self.file2.read())
+        
+        self.file3 = open('Right help.txt', 'r')
+        self.r_help = (self.file3.read())
+        
         # This disables the corresponding button in the main menu
         button_dict["Help"].config(state=tkinter.DISABLED)
 
@@ -249,16 +353,58 @@ class Help:
         self.Help_window = tkinter.Toplevel()
         self.Help_window.title('Help')
 
-        self.Help_frame = tkinter.Frame(self.Help_window)
+        self.Help_frame = tkinter.Frame(self.Help_window,
+                                        bg="#ffffff")
         self.Help_frame.grid()
 
-        self.text1 = tkinter.Label(self.Help_frame,
-                                   text="Help")
-        self.text1.grid(row=0, column=0)
+        self.text1 = tkinter.Label(
+            self.Help_frame,
+            text=self.help_file,
+            anchor=tkinter.CENTER,
+            bg="#ffffff",
+            fg="#000000",
+            font=('Arial, 12'),
+            bd=10,
+            relief=tkinter.GROOVE,
+            padx=10,
+            pady=10)
+        self.text1.grid(row=0, columnspan=3)
+        
+        self.text_left = tkinter.Label(
+            self.Help_frame,
+            text=self.l_help,
+            anchor=tkinter.CENTER,
+            bg="#ffffff",
+            fg="#000000",
+            font=('Arial, 12'),
+            bd=10,
+            padx=10,
+            pady=10)
+        
+        self.text_left.grid(
+            row=1, column=0,
+            sticky=tkinter.NSEW)
+        
+        self.text_right = tkinter.Label(
+            self.Help_frame,
+            text=self.r_help,
+            anchor=tkinter.CENTER,
+            bg="#ffffff",
+            fg="#000000",
+            font=('Arial, 12'),
+            bd=10,
+            padx=10,
+            pady=10)
+                
+        self.text_right.grid(
+            row=1, column=1,
+            sticky=tkinter.NSEW)        
 
         # Exit button
-        Function_class.exit_button(self.Help_frame, 1,
-                                   "Help", self.Help_window)
+        self.exit_button = Function_class.exit_button(self.Help_frame, 2,
+                                                      "Help", self.Help_window)
+        self.exit_button.grid(sticky=tkinter.SW)
+        
 
 # Viewing past calculations
 class Recall:
@@ -292,5 +438,6 @@ class Exit:
 if __name__ == "__main__":
     root = tkinter.Tk()
     root.title("Main menu")
+    root.resizable(0, 0)
     main_class = Main(root)
     root.mainloop()
