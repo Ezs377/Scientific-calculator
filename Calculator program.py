@@ -90,8 +90,8 @@ class Characters:
         'squareroot': '\u221a', 'root': '\u02e3' + '\u221a',
         0: '0', 'dot': '.', 1: '1', 2: '2', 3: '3',
         4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9',
-        'fdconvert': 'F-D', 'shift': 'Shift', 'alpha': 'Alpha',
-        'xsquared': 'X' + "\u00b2", 'fpconvert': 'F-' + '\u0025',
+        'fdconvert': 'D-F', 'shift': 'Shift', 'alpha': 'Alpha',
+        'xsquared': 'X' + "\u00b2", 'fpconvert': 'D-' + '\u0025',
         'dpconvert': 'D-' + '\u0025'}
 
     shift_characters = {
@@ -224,6 +224,7 @@ class Operations:
         button_fg = "#000000"
         self.toggle = 1
         self.a_toggle = 1
+        self.F_toggle = 1
 
         # Create window and frame
         self.operation_window = tkinter.Toplevel()
@@ -282,6 +283,10 @@ class Operations:
         # Change DEL button command
         Function_class.command_change(self.row1, 1,
                                       lambda: self.delete())
+        
+        # Change F-D command
+        Function_class.command_change(self.row1, 4,
+                                      lambda: self.convert())
 
         # Change SHIFT button command
         Function_class.command_change(self.row1, 5,
@@ -377,91 +382,61 @@ class Operations:
 
     # Calculating function
     def equals(self):
-        self.added_list.append('')
-        self.error_status = 0
-        # Split numbers and operators
-        self.temp_number = []
-        self.number_list = []
-        self.temp_operator = []
-        self.equation = []
+        '''FOLLOW BEDMAS'''
+        '''PARSE SIN, COS, TAN and etc as bracketed expressions'''
+        '''How it works:
+        1. Search for brackets. If none found, got to next step.
+           otherwise, add bracketed characters to a list, and use
+           it as input for the next steps. If there are uneven brackets,
+           present error.
         
-        # Brackets
-        self.lbracket_count = 0
-        self.rbracket_count = 0
+        2. Scan the digits. For every integer that isn't followed by an
+           operator, add the digit to a list and repeat until an operator is 
+           detected. Remove each digit from the orignal list if possible
+           using index() so that duplicates aren't deleted. Then, join the
+           digits in a list together, output as float, and replace the digits
+           in the input collection list (self.added_list). Repeat for digits
+           after the operator as well.
+           
+        3. Once no more brackets, search for exponents. SinCosTan, Log,
+           Ln count as exponents. Bracket the exponent symbol and the integer
+           next to it together. Parse this to produce a single output as a
+           float. Replace the symbol and integer with this float value. If an
+           exponent has no integer in front of it, present error. For root and
+           factorial, they scan for integer behind them
+           
+        4. Once there are no exponents, search for multiplication/division.
+           Look for the terms (Characters.character_dict['times']) and
+           (Characters.character_dict['divide']). If there are no digits
+           before or after the operator, present error. Otherwise, take the digits
+           before and after the operator, and process them using the operator. Use
+           a 'for' loop to scan from left to right. Once processed, a single float
+           output should come out. Replace the previous digits, and operator, with
+           this value in the input collection list.
+           
+        5. Once there are no times/divide, search for addition/subtraction.
+           Look for the terms (Character.character_dict['add']) and
+           (Character.character_dict['minus']).If there are no digits before or
+           after the operator, present error. Otherwise, take the digits before and
+           after the operator, and process them using the operator. Use a 'for'
+           loop to scan from left to right. Once processed, a single float output
+           should come out. Replace the previous digits, and operator, with this
+           value in the input collection list.
         
-        # Search for numbers and concatrate 
-        # multiple digit numbers
-        for char in self.added_list:
-            try:
-                int(char)
-                
-            except:
-                self.temp_operator.append(char)
-                if self.temp_number:
-                    self.number_list.append(''.join(self.temp_number))
-                    self.temp_number = []
-            
-            # If character is integer
-            else:
-                # Add to temporary list
-                if int(char) in Characters.integer_characters:
-                    self.temp_number.append(char)
+        6. Finally, the result should be one float, which can be presented using
+           self.print_result(float). If there wer brackets in the equation,
+           this is the result of one bracket. Remove the brackets, and replace
+           it with the result, then repeat the whole process for the other brackets
+           until only one float remains muhahaha.'''
         
-        # If an operator is the first character
-        if self.temp_operator and not self.number_list:
-            if self.temp_operator[
-                0] in Characters.operation_characters:
-                # Error
-                self.error('syntax')
         
-            
-                
-        # Brackets
-        self.brackets()
-        
-        # Remove endline marker
-        self.added_list.remove('')
-        self.temp_operator.remove('') 
-        
-        # Trailing operator error
-        if not self.added_list or self.added_list[
-            -1] in Characters.operation_characters:
-            self.error('syntax')        
-            
-        if self.error_status == 0:
-            self.calculations()
-        else:
-            pass
+        # List with inputted characters
+        print (self.added_list)
         
     # Ensure brackets are balanced
     def brackets(self):
+        pass
         
-        if Characters.character_dict[
-            'lbracket']in self.added_list:
-            
-            # If a bracket pair isn't present
-            if (
-                Characters.character_dict[
-            'lbracket'] in self.added_list and Characters.character_dict[
-                'rbracket'] not in self.added_list):
-                # Error
-                self.error('syntax')
-            
-            for element in self.added_list:
-                if element == Characters.character_dict[
-                    'lbracket']:
-                    self.lbracket_count += 1
-                    #self.index1 = (self.added_list.index(element))
-                    
-                if element == Characters.character_dict[
-                    'rbracket']:
-                    self.rbracket_count += 1
-                    #self.index2 = (self.added_list.index(element))
-            
-            if self.lbracket_count != self.rbracket_count:
-                self.error('syntax')        
-        
-    
     # Bracket analysis
     def analyse_bracket(self, List, searched):
         for i in reversed(range(len(List))):
@@ -506,18 +481,8 @@ class Operations:
             print ("No brackets")
             
     def process(self, bracket_list):
-        bracket_list.pop(0)
-        for index, name in enumerate(bracket_list):
-            if name != Characters.character_dict['rbracket']:
-                try:
-                    int(name)
-                
-                except:
-                    print ("operator!")
-                       
-             
- 
-            
+        pass
+                             
     # Maths
     def calculate(self, a, b, method):
         if method == 'add':
@@ -679,8 +644,8 @@ class Operations:
                 # If the label of a button matches 
                 # a character in shift dictionary
                 if a['text'] in Characters.shift_characters:
-                    self.convert = Characters.shift_characters[a['text']]
-                    a.config(text=self.convert,
+                    self.convert1 = Characters.shift_characters[a['text']]
+                    a.config(text=self.convert1,
                              command=lambda x=a:self.printout(x))
                 else:
                     pass
@@ -700,8 +665,8 @@ class Operations:
                 # If the label of a button matches 
                 # a character in shift dictionary
                 if a['text'] in self.converted:
-                    self.convert = self.converted[a['text']]
-                    a.config(text=self.convert,
+                    self.convert1 = self.converted[a['text']]
+                    a.config(text=self.convert1,
                              command=lambda x=a:self.printout(x))
                 else:
                     pass            
@@ -743,6 +708,27 @@ class Operations:
         else:
             pass
 
+    # For the F-D button
+    def convert(self):
+        if self.F_toggle == 1:
+            pass
+        '''Get answer output, convert it'''
+        '''
+        if label is D-F, convert from x.y to x/y form
+        if label is D-%, convert from x.y to x% form
+        if label is F-P, convert from x/y to x% form
+        '''
+        
+        if self.F_toggle == 0:
+            pass
+        '''Flip function so that it does the opposite as before'''
+        '''
+        if label is D-F, convert from x/y x.y form
+        if label is D-%, convert from x% to x.y form
+        if label is F-P, convert from x% to x/y form
+        '''        
+        
+        
 # User guide
 class Help:
     def __init__(self):
