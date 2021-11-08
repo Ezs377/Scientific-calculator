@@ -106,12 +106,40 @@ class Characters:
     alpha_characters = {
         character_dict['fdconvert']: character_dict['dpconvert']}
 
-    operation_characters = {'add': '+', 'minus': '-',
-        'divide': '\u00f7', 'times': 'x', 'equals': '=', 'power': '^',
+    operation_characters = [
+        character_dict['add'],
+        character_dict['minus'],
+        character_dict['divide'],
+        character_dict['times'],
+        character_dict['factorial'],
+        character_dict['squared'],
+        character_dict['power'],
+        character_dict['sin'],
+        character_dict['cos'],
+        character_dict['tan'],
+        character_dict['log'],
+        character_dict['ln'],
+        character_dict['dot']]
+    
+    complex_oper_chars =  {
+        'power': '^',
         'squareroot': '\u221a', 'root': '\u02e3' + '\u221a'}
+    
+    BEDMAS = {character_dict['times']:0,
+              character_dict['divide']:1,
+              character_dict['add']:2,
+              character_dict['minus']:3}
+    
+    reverse_BEDMAS = {0:character_dict['times'],
+                      1:character_dict['divide'],
+                      2:character_dict['add'],
+                      3:character_dict['minus']}
 
     integer_characters = {1: '1', 2: '2', 3: '3',
         4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 0: '0'}
+    
+    constants = {character_dict['pi']:math.pi,
+                 character_dict['euler']:math.e}
 
 
 # Main class
@@ -349,32 +377,159 @@ class Operations:
 
     # Calculating function
     def equals(self):
-        
+        self.added_list.append('')
+        self.error_status = 0
         # Split numbers and operators
         self.temp_number = []
+        self.number_list = []
         self.temp_operator = []
-            
-        # Search for numbers
-        for char in self.added_list:
-            try:
-                char = int(char)
-            except:
-                self.temp_operator.append(char)
-            
-            if char in self.characters.integer_characters:
-                self.temp_number.append(char)
-        print (self.temp_number)
-        print (self.temp_operator)
-        
-                
-        '''WORK ON CALCULATIONS'''
+        self.equation = []
         
         # Brackets
-        if '(' in self.added_list:
-            for element in self.added_list:
-                if element == '(':
-                    index1 = (self.added_list.index(element))
+        self.lbracket_count = 0
+        self.rbracket_count = 0
+        
+        # Search for numbers and concatrate 
+        # multiple digit numbers
+        for char in self.added_list:
+            try:
+                int(char)
                 
+            except:
+                self.temp_operator.append(char)
+                if self.temp_number:
+                    self.number_list.append(''.join(self.temp_number))
+                    self.temp_number = []
+            
+            # If character is integer
+            else:
+                # Add to temporary list
+                if int(char) in Characters.integer_characters:
+                    self.temp_number.append(char)
+        
+        # If an operator is the first character
+        if self.temp_operator and not self.number_list:
+            if self.temp_operator[
+                0] in Characters.operation_characters:
+                # Error
+                self.error('syntax')
+        
+            
+                
+        # Brackets
+        self.brackets()
+        
+        # Remove endline marker
+        self.added_list.remove('')
+        self.temp_operator.remove('') 
+        
+        # Trailing operator error
+        if not self.added_list or self.added_list[
+            -1] in Characters.operation_characters:
+            self.error('syntax')        
+            
+        if self.error_status == 0:
+            self.calculations()
+        else:
+            pass
+        
+    # Ensure brackets are balanced
+    def brackets(self):
+        
+        if Characters.character_dict[
+            'lbracket']in self.added_list:
+            
+            # If a bracket pair isn't present
+            if (
+                Characters.character_dict[
+            'lbracket'] in self.added_list and Characters.character_dict[
+                'rbracket'] not in self.added_list):
+                # Error
+                self.error('syntax')
+            
+            for element in self.added_list:
+                if element == Characters.character_dict[
+                    'lbracket']:
+                    self.lbracket_count += 1
+                    #self.index1 = (self.added_list.index(element))
+                    
+                if element == Characters.character_dict[
+                    'rbracket']:
+                    self.rbracket_count += 1
+                    #self.index2 = (self.added_list.index(element))
+            
+            if self.lbracket_count != self.rbracket_count:
+                self.error('syntax')        
+        
+    
+    # Bracket analysis
+    def analyse_bracket(self, List, searched):
+        for i in reversed(range(len(List))):
+            if List[i] == searched:
+                return i                    
+    
+    # The actual calculations                
+    def calculations(self):
+        
+        # Variables
+        self.result = 0
+        self.output = 0
+        self.list_of_operations = []
+        
+        # If only digits are inputted 
+        if not self.temp_operator or not self.added_list:
+            self.result = self.number_list[0]
+            self.print_result(self.number_list[0])
+        
+        # Look for brackets
+        elif Characters.character_dict[
+            'lbracket'] in self.added_list:
+            self.bracket = []
+            self.index_of_lbracket = ''
+            
+            
+            # Searches for the innermost left bracket
+            self.innermost_bracket = self.analyse_bracket(
+                self.added_list, Characters.character_dict[
+                    'lbracket'])            
+            
+            for a in self.added_list[self.innermost_bracket:]:
+                self.bracket.append(a)
+                if a == Characters.character_dict['rbracket']:
+                    self.rbracket_index = a
+                    break
+            
+            # The result of the innermost brackers
+            self.process(self.bracket)
+        
+        else:
+            print ("No brackets")
+            
+    def process(self, bracket_list):
+        bracket_list.pop(0)
+        for index, name in enumerate(bracket_list):
+            if name != Characters.character_dict['rbracket']:
+                try:
+                    int(name)
+                
+                except:
+                    print ("operator!")
+                       
+             
+ 
+            
+    # Maths
+    def calculate(self, a, b, method):
+        if method == 'add':
+            return a+b
+        elif method == 'minus':
+            return a-b
+        elif method == 'times':
+            return a*b
+        elif method == 'divide':
+            return a/b        
+            
+        
 
     # Key bindings
     def bindings(self):
@@ -383,7 +538,7 @@ class Operations:
             '<BackSpace>', lambda command: self.delete())
 
         # Number keys
-        for x in (range(0, 9)):
+        for x in (range(0, 10)):
             self.operation_window.bind(
                 str(x), lambda command,
                 x=x: self.keys(
@@ -408,26 +563,57 @@ class Operations:
     # To prinout from button to text
     def printout(self, button):
         self.textbox.config(state=tkinter.NORMAL)
+        self.textbox.delete('1.0', 'end')
         self.added_list.append(button['text'])
+        self.joined_list = ''.join(self.added_list)
         try:
-            self.textbox.insert('insert', self.added_list[-1])
+            self.textbox.insert('insert', self.joined_list)
         except:
-            print ('error')
+            self.error('unknown')
         self.textbox.config(state=tkinter.DISABLED)
 
     # For buttons with specific values
     def printout_true(self, text):
         # Turn on textbox
         self.textbox.config(state=tkinter.NORMAL)
+        self.textbox.delete('1.0', 'end')
         self.added_list.append(text)
+        self.joined_list = ''.join(self.added_list)
         try:
-            self.textbox.insert('insert', self.added_list[-1])
+            self.textbox.insert('insert', self.joined_list)
 
         except:
-            print('error')
+            self.error('Unknown')
         # Turn off textbox
         self.textbox.config(state=tkinter.DISABLED)
+    
+    # For output result
+    def print_result(self, text):
+        # Turn on textbox
+        # Width = 30 chars
+        self.spacer = []
+        self.textbox.config(state=tkinter.NORMAL)
+        
+        # Set spacing
+        self.space_count = 60-len(self.added_list)
+        
+        # One line = 30 characters
+        for spacer in range(0, self.space_count):
+            self.spacer.append(' ')
+        
+        # Add spacing characters
+        for spacer in self.spacer:
+            self.textbox.insert('end', spacer)
+        
+        # Insert answer after spacing
+        try:
+            self.textbox.insert('end', '=')
+            self.textbox.insert('end', self.result)
 
+        except:
+            self.error('Unknown')
+        # Turn off textbox
+        self.textbox.config(state=tkinter.DISABLED)
     # Clear screen
     def clear_all(self):
         self.textbox.config(state=tkinter.NORMAL)
@@ -437,15 +623,27 @@ class Operations:
 
     # Backspace
     def delete(self):
+        
         # Turn on textbox
         self.textbox.config(state=tkinter.NORMAL)
+        self.textbox.delete('1.0', 'end')
         try:
-            self.added_list.pop()
+            # Insert endline marker
+            self.added_list.append('')
+            self.added_list.pop(-2)
         except:
             pass
 
-        # Delete character
-        self.textbox.delete('end-2c')
+        # 'Delete' character
+        self.joined_list = ''.join(self.added_list)
+        try:
+            self.textbox.insert('insert', self.joined_list)
+            # Remove endline marker
+            self.added_list.remove('')
+
+        except:
+            print('error')        
+        
         # Turn off textbox
         self.textbox.config(state=tkinter.DISABLED)
         
@@ -457,10 +655,16 @@ class Operations:
     def error(self, error_type):
         if error_type == 'math':
             tkinter.messagebox.showwarning('Error', 'Math error')
+            self.error_status = 1
         elif error_type == 'stack':
             tkinter.messagebox.showwarning('Error', 'Stack error')
+            self.error_status = 1
+        elif error_type == 'syntax':
+            tkinter.messagebox.showwarning('Error', 'Syntax error')
+            self.error_status = 1
         else:
             tkinter.messagebox.showwarning('Error', 'Unknown error')
+            self.error_status = 1
     
     # For the shift button
     def shift_convert(self):
