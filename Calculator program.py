@@ -91,8 +91,8 @@ class Characters:
         0: '0', 'dot': '.', 1: '1', 2: '2', 3: '3',
         4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9',
         'fdconvert': 'D-F', 'shift': 'Shift', 'alpha': 'Alpha',
-        'xsquared': 'X' + "\u00b2", 'fpconvert': 'D-' + '\u0025',
-        'dpconvert': 'D-' + '\u0025'}
+        'xsquared': 'X' + "\u00b2", 'fpconvert': 'F-' + '\u0025',
+        'dpconvert': 'D-' + '\u0025', 'answer': 'Ans'}
 
     shift_characters = {
         character_dict['sin']: character_dict['inversesin'],
@@ -101,29 +101,28 @@ class Characters:
         character_dict['xsquared']: character_dict['squareroot'],
         character_dict['power']: character_dict['root'],
         character_dict['pi']: character_dict['euler'],
-        character_dict['fdconvert']: character_dict['fpconvert']}
+        character_dict['fdconvert']: character_dict['dpconvert']}
     
     alpha_characters = {
-        character_dict['fdconvert']: character_dict['dpconvert']}
+        character_dict['fdconvert']: character_dict['fpconvert'],
+        character_dict['pi']: character_dict['answer']}
 
     operation_characters = [
-        character_dict['add'],
-        character_dict['minus'],
-        character_dict['divide'],
-        character_dict['times'],
-        character_dict['factorial'],
-        character_dict['squared'],
-        character_dict['power'],
-        character_dict['sin'],
-        character_dict['cos'],
-        character_dict['tan'],
-        character_dict['log'],
-        character_dict['ln'],
-        character_dict['dot']]
+        character_dict['add'], character_dict['minus'],
+        character_dict['divide'], character_dict['times'],
+        character_dict['factorial'], character_dict['squared'],
+        character_dict['power'], character_dict['sin'],
+        character_dict['cos'], character_dict['tan'],
+        character_dict['log'], character_dict['ln'],
+        character_dict['power'], character_dict['squareroot'],
+        character_dict['root'], character_dict['squared'],
+        character_dict['inversesin'], character_dict['inversecos'],
+        character_dict['inversetan']]
     
-    complex_oper_chars =  {
-        'power': '^',
-        'squareroot': '\u221a', 'root': '\u02e3' + '\u221a'}
+    brackets = [
+        character_dict['lbracket'],
+        character_dict['rbracket']]
+
     
     BEDMAS = {character_dict['times']:0,
               character_dict['divide']:1,
@@ -136,7 +135,8 @@ class Characters:
                       3:character_dict['minus']}
 
     integer_characters = {1: '1', 2: '2', 3: '3',
-        4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 0: '0'}
+        4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 0: '0',
+        '.':'.'}
     
     constants = {character_dict['pi']:math.pi,
                  character_dict['euler']:math.e}
@@ -429,9 +429,72 @@ class Operations:
            it with the result, then repeat the whole process for the other brackets
            until only one float remains muhahaha.'''
         
+        self.processed = [] # List of processed characters
+        self.temp_operator = [] # List of operators in input line
+        self.temp_integer = [] # List of digits in input line
+        self.compiled_number = [] # List of compiled numbers
+        self.error_status = 0 # Error state
         
+        self.error_checking(self.added_list)
+        
+        '''BEDMAS PROCESS'''
+        
+        '''insert bracket analysis here'''
+        '''Brackets'''
+        
+        
+        '''No bracket input, as this scans in-between brackets
+        DO NOT TEST WITH BRACKETS YET'''  
+        
+        # While an error has not been raised
+        #while not self.error_status:
+        
+        # Separate into operators and digits
+        for index, term in enumerate(self.added_list):
+            try:                
+                # Add to number list if it is an integer or dot
+                if int(
+                    term) in Characters.integer_characters or str(
+                        term) in Characters.integer_characters:
+                    self.temp_integer.append (str(term))
+                    
+                    
+                # If the last item in a list is integer
+                if index == len(self.added_list)-1:
+                    self.compiled_number.append(''.join(self.temp_integer))
+                    self.temp_integer = []
+                
+            except:
+                # If operation detected, join numbers together
+                if term in Characters.operation_characters:
+                    # Join previous integers together into
+                    # one number and add to list
+                    self.compiled_number.append(''.join(self.temp_integer))
+                    self.temp_integer = []
+                    self.temp_operator.append (term)
+                # If a decimal dot
+                elif term in Characters.integer_characters['.']:
+                    self.temp_integer.append(term)
+                    
+                # If character is not recognized
+                else:
+                    self.error("No matched character")
+        
+        if self.temp_operator:
+            self.processed = [None]*(len(self.compiled_number)+len(self.temp_operator))
+            self.processed[::2] = self.compiled_number
+            self.processed[1::2] = self.temp_operator       
+                
+            
         # List with inputted characters
-        print (self.added_list)
+        print (self.temp_operator)
+        print (self.compiled_number)
+        print (self.processed)
+        
+        if not self.error_status:
+            self.print_result()
+        else:
+            pass
         
     # Ensure brackets are balanced
     def brackets(self):
@@ -443,17 +506,64 @@ class Operations:
             if List[i] == searched:
                 return i                    
     
+    # For checking errors in input
+    def error_checking(self, List):
+        
+        # Check each item in list
+        for index, a in enumerate(List):
+            # Check for operators/dot
+            if (a in Characters.operation_characters or
+                a == Characters.character_dict['dot']):
+                
+                # If the character is a dot        
+                if a == Characters.character_dict['dot']:
+                    
+                    if index != len(List)-1:
+                        # If double dots present
+                        if List[(List.index(a))+1] == Characters.character_dict['dot']:
+                            # Raise error and clear screen
+                            self.error('syntax')
+                            self.clear_all()
+                        
+                    # If dot is the last character
+                    elif index == len(List)-1:
+                        # Raise error and clear screen
+                        self.error('syntax')
+                        self.clear_all()   
+                        
+                # If the first character is an operator or decimal dot
+                if index == 0:
+                    if (a in Characters.operation_characters or
+                        a == Characters.character_dict['dot']):
+                        self.error('syntax')
+                        self.clear_all()
+                
+                # While the character is not the last character
+                elif index != len(List)-1:
+                    # If a double operations/dot present
+                    if (List[(List.index(a))+1] in Characters.operation_characters):
+                        # Raise error and clear screen
+                        self.error('syntax')
+                        self.clear_all()   
+            
+                
+                # If an operator is the last character
+                elif index == len(List)-1:
+                    # Raise error and clear screen
+                    self.error('syntax')
+                    self.clear_all()
+                    
+                         
+            
     # The actual calculations                
     def calculations(self):
         
         # Variables
-        self.result = 0
-        self.output = 0
+        self.result = 0 #Result of calculations
         self.list_of_operations = []
         
         # If only digits are inputted 
         if not self.temp_operator or not self.added_list:
-            self.result = self.number_list[0]
             self.print_result(self.number_list[0])
         
         # Look for brackets
@@ -476,6 +586,7 @@ class Operations:
             
             # The result of the innermost brackers
             self.process(self.bracket)
+            print (self.bracket)
         
         else:
             print ("No brackets")
@@ -508,6 +619,11 @@ class Operations:
                 str(x), lambda command,
                 x=x: self.keys(
                     self.characters.character_dict[x]))
+        
+        # Decimal dot
+        self.operation_window.bind(
+            '.', lambda command: self.keys(
+                Characters.character_dict['dot']))
         
         # Enter
         self.operation_window.bind(
@@ -553,27 +669,19 @@ class Operations:
         self.textbox.config(state=tkinter.DISABLED)
     
     # For output result
-    def print_result(self, text):
+    def print_result(self):
         # Turn on textbox
         # Width = 30 chars
         self.spacer = []
         self.textbox.config(state=tkinter.NORMAL)
         
-        # Set spacing
-        self.space_count = 60-len(self.added_list)
-        
-        # One line = 30 characters
-        for spacer in range(0, self.space_count):
-            self.spacer.append(' ')
-        
-        # Add spacing characters
-        for spacer in self.spacer:
-            self.textbox.insert('end', spacer)
-        
         # Insert answer after spacing
         try:
+            self.textbox.insert('end', '\n')
             self.textbox.insert('end', '=')
-            self.textbox.insert('end', self.result)
+            
+            '''Change this to self.result when done'''
+            self.textbox.insert('end', "Equals") 
 
         except:
             self.error('Unknown')
@@ -679,17 +787,28 @@ class Operations:
     # For the alpha button    
     def alpha_convert(self):
         
-        # If not ALPHA
+        # If not ALPHA, change buttons to ALPHA version
         if self.a_toggle == 1 and self.toggle == 1:
             # Change the color of ALPHA
             self.row1[6].config(bg='#a6a6a6')
+            
+            # Change convert button
             self.row1[4].config(
                 text=Characters.alpha_characters[
                     Characters.character_dict['fdconvert']],
-                     command=lambda:self.printout(
-                         self.row1[4]))
+                command=lambda:self.printout(
+                    self.row1[4]))
+            
+            # Change constant button to answer
+            self.row3[6].config(
+                text=Characters.alpha_characters[
+                    Characters.character_dict['pi']],
+                command=lambda:self.printout(
+                    self.row3[6]))
+        
             self.a_toggle = 0
         
+        # If ALPHA is on, switch back to original buttons
         elif self.a_toggle == 0 and self.toggle == 1:
             # Change the color of ALPHA
             self.row1[6].config(bg='#f2f2f2')
@@ -698,12 +817,20 @@ class Operations:
             self.a_converted = {value: key for (
                 key, value) in Characters.alpha_characters.items()}
             
+            # Change buttons back to original
             self.row1[4].config(
                 text=self.a_converted[
                     Characters.character_dict[
-                    'dpconvert']],
+                    'fpconvert']],
                 command=lambda:self.printout(
                          self.row1[4]))
+            
+            self.row3[6].config(
+                text=self.a_converted[
+                    Characters.character_dict['answer']],
+                command=lambda:self.printout(
+                    self.row3[6]))            
+            
             self.a_toggle = 1
         else:
             pass
@@ -726,7 +853,8 @@ class Operations:
         if label is D-F, convert from x/y x.y form
         if label is D-%, convert from x% to x.y form
         if label is F-P, convert from x% to x/y form
-        '''        
+        '''
+    
         
         
 # User guide
