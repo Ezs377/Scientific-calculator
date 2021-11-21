@@ -8,4 +8,3 @@ t  key = Tan
 l  key = Log
 n  key = Ln
 p  key = Pi
-^  button = Power of
