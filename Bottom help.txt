@@ -3,5 +3,7 @@ or performed an impossible calculation. Please try again after
 adjusting your inputs.
 To minimize errors, please use brackets to close values in complex
 arithmetics, like this: sin(32+5) and (5!)*4
+This calculator does not support auto-inserting, so numbers in brackets will not 
+be automatically multiplied by numbers outside the brackets, e.g. 5(2) will not equal 10
 Please remember that this calculator can only operate in degrees,
 not radians!
