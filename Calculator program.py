@@ -175,6 +175,9 @@ class Main:
         functions = [Operations, Recall, Help, Exit]
         rowno = 1
         columnno = 0
+        
+        # History file
+        self.history_file = open('History.txt', 'a')
 
         # Master root
         self.master = source
@@ -279,12 +282,12 @@ class Operations:
 
         # Row 1
         self.namelist = [
-            'clear', 'delete', 'factorial', 'add',
-            'fdconvert', 'shift', 'alpha']
+            'clear', 'delete', 'factorial', 'add', 'alpha']
         Function_class.create_row(self.row1, self.namelist, 1,
                                   self.operation_frame,
                                   0, lambda: None)
 
+        # Change commands of each button
         for index, button in enumerate(self.row1):
             button.config(
                 command=lambda index=index: self.printout(
@@ -298,17 +301,20 @@ class Operations:
         Function_class.command_change(self.row1, 1,
                                       lambda: self.delete())
 
-        # Change F-D command
-        Function_class.command_change(self.row1, 4,
-                                      lambda: self.convert())
+        # Shift button
+        self.shift_button = (Function_class.create_button
+                             (self.operation_frame,
+                              Characters.character_dict['shift'],
+                              0, 0, button_bg, button_fg,
+                              ("Arial 13 bold"), 1,
+                              lambda: None, "#cccccc"))
+        # Grid placement
+        self.shift_button.grid(
+            row=1, column=4, columnspan=3, sticky=tkinter.NSEW)
 
-        # Change SHIFT button command
-        Function_class.command_change(self.row1, 5,
-                                      lambda: self.shift_convert())
-
-        # Change ALPHA button command
-        Function_class.command_change(self.row1, 6,
-                                      lambda: self.alpha_convert())
+        # Command change
+        self.shift_button.config(
+            command=lambda: self.shift_convert())
 
         # Row 2
         self.namelist = [
@@ -317,6 +323,7 @@ class Operations:
                                   self.operation_frame,
                                   0, lambda: None)
 
+        # Change button commands
         for index, button in enumerate(self.row2):
             button.config(
                 command=lambda index=index: self.printout(
@@ -326,7 +333,7 @@ class Operations:
         Function_class.create_row(self.row3, self.namelist, 3,
                                   self.operation_frame,
                                   0, lambda: None)
-
+        # Change button commands
         for index, button in enumerate(self.row3):
             button.config(
                 command=lambda index=index: self.printout(
@@ -336,12 +343,13 @@ class Operations:
         Function_class.create_row(self.row4, self.namelist, 4,
                                   self.operation_frame,
                                   0, lambda: None)
-
+        # Change button commands
         for index, button in enumerate(self.row4):
             button.config(
                 command=lambda index=index: self.printout(
                     self.row4[index]))
 
+        # Change command for squared button 
         self.row4[4].config(
             command=lambda: self.printout_true(
                 self.characters.character_dict['squared']))
@@ -350,7 +358,7 @@ class Operations:
         self.namelist = [0, 'dot', 'lbracket', 'rbracket']
         Function_class.create_row(self.row5, self.namelist, 5,
                                   self.operation_frame, 2, lambda: None)
-
+        # Change button commands
         for index, button in enumerate(self.row5):
             button.config(
                 command=lambda index=index: self.printout(
@@ -362,13 +370,15 @@ class Operations:
                               button_bg, button_fg,
                               ("Arial"), 1,
                               lambda: None, "#cccccc"))
-
+        # Equals button grid
         self.equal_button.grid(
             row=4, rowspan=2, column=6, sticky=tkinter.NSEW)
-
+        # Equals command
         self.equal_button.config(
             command=lambda: self.equals())
 
+        # Add all butons to a list, so they can
+        # be located easily
         for buttons in self.row1:
             self.allrows.append(buttons)
         for buttons in self.row2:
@@ -391,6 +401,7 @@ class Operations:
             "Operations", self.operation_window)
         self.exit_button.grid(columnspan=2)
 
+        # Turn on keyboard bindings
         self.bindings()
 
     # Calculating function, when equals is pressed
@@ -451,6 +462,7 @@ class Operations:
         self.compiled_number = []  # List of compiled numbers
         self.bracket_count = 0 # Amount of bracket pairs
         self.error_status = 0  # Error state
+        self.to_calculate = self.added_list[:]
         
         '''1. Check for errors
            2. If errors, force user to change input. Else, continue to next step
@@ -463,20 +475,20 @@ class Operations:
         # Check for errors in input
         '''This would ensure the input is able to be processed.
         and gives amount of bracket pairs if any are present'''
-        self.error_checking(self.added_list)
+        self.error_checking(self.to_calculate)
 
         # If there are brackets in input
         if (Characters.character_dict['lbracket'] in
             self.added_list or Characters.character_dict['rbracket'] in
-            self.added_list): 
-            self.bracket_check(self.added_list)
+            self.to_calculate): 
+            self.bracket_check(self.to_calculate)
 
         # Scan for innermost bracket pair (right now it only searches for one pair)
         while self.bracket_count > 0:
             self.lbracket_index = 0
             self.rbracket_index = 0
             # Get the equation in innermost brackets
-            self.filtered = self.bracket_analysis(self.added_list)
+            self.filtered = self.bracket_analysis(self.to_calculate)
 
             # Process equation
             self.bracket_equation = self.get_equation(self.filtered)
@@ -485,14 +497,14 @@ class Operations:
             self.bracket_result = self.calculate(self.bracket_equation)
 
             # Replace brackets with processed equation
-            self.added_list[self.lbracket_index:self.rbracket_index+1] = [self.bracket_result]
+            self.to_calculate[self.lbracket_index:self.rbracket_index+1] = [self.bracket_result]
 
             # Reduce bracket counts
             self.bracket_count -= 1
 
         # Get an equation from list input
         '''Brackets should've been removed prior to this step'''
-        self.equation = self.get_equation(self.added_list)
+        self.equation = self.get_equation(self.to_calculate)
         self.answer = self.equation
 
         # If an error has not been raised
@@ -521,17 +533,20 @@ class Operations:
 
         # Separate into operators and digits
         for index, term in enumerate(List):
+            
             try:
                 # Convert input to integer
-                term = int(term)
+                int_term = int(term)
 
                 # Add to number list if it is an integer
                 if (int(term) in Characters.integer_characters):
-                    self.temp_integer.append(str(term))   
+                    self.temp_integer.append(str(term))
+                
+                elif term == float(term):
+                    self.temp_integer.append(str(term))
                 
                 else:
                     self.temp_integer.append(str(term))
-                
 
             except:
                 
@@ -551,9 +566,9 @@ class Operations:
                 elif str(term) in Characters.constants:
                     self.temp_integer.append(str(Characters.constants_def[term]))
                     
-                # If character is not recognized (i.e. decimal)
+                # If character is float (i.e. decimal)
                 else:
-                    break
+                    self.temp_integer.append(str(term))
 
             # If the last item in a list is integer
             if index == len(List) - 1:
@@ -691,7 +706,7 @@ class Operations:
 
             # If there are brackets present
             elif a in Characters.brackets:
-                self.bracket_check(self.added_list)
+                self.bracket_check(self.to_calculate)
 
             # If an operator is the last character
             elif index == len(List) - 1:
@@ -717,9 +732,9 @@ class Operations:
 
             # Searches for the innermost left bracket
             # Search through the list backwards
-            for i in reversed(range(len(self.added_list))):
+            for i in reversed(range(len(self.to_calculate))):
                 # If the item is a left bracket
-                if self.added_list[i] == Characters.character_dict[
+                if self.to_calculate[i] == Characters.character_dict[
                     'lbracket']:
                     self.innermost_bracket = i
                     self.lbracket_index = i
@@ -751,7 +766,6 @@ class Operations:
 
             # The result of the characters in innermost brackets,
             # without the brackets
-            print ('brackets', self.bracket)
             return self.bracket
        
 
@@ -823,7 +837,6 @@ class Operations:
                     '''If sin is a symbol'''
                     # Python assumes input is in radians for trigonometry
                     if a == Characters.character_dict['sin']:
-                        print ('before', self.final_equation)
                         # Convert input to radians first
                         total = math.sin(math.radians(
                             float(self.final_equation[index+1])))
@@ -1148,7 +1161,7 @@ class Operations:
         if self.toggle == 1 and self.a_toggle == 1:
 
             # Change color of SHIFT
-            self.row1[5].config(bg='#a6a6a6')
+            self.row1[4].config(bg='#a6a6a6')
 
             for a in self.allrows:
                 # If the label of a button matches
@@ -1165,7 +1178,7 @@ class Operations:
         # If shifted
         elif self.toggle == 0 and self.a_toggle == 1:
             # Change color of SHIFT
-            self.row1[5].config(bg='#f2f2f2')
+            self.row1[4].config(bg='#f2f2f2')
 
             # Inverterd shift dictionary
             self.converted = {value: key for (
@@ -1185,78 +1198,6 @@ class Operations:
 
         else:
             pass
-
-    # For the alpha button
-    def alpha_convert(self):
-
-        # If not ALPHA, change buttons to ALPHA version
-        if self.a_toggle == 1 and self.toggle == 1:
-            # Change the color of ALPHA
-            self.row1[6].config(bg='#a6a6a6')
-
-            # Change convert button
-            self.row1[4].config(
-                text=Characters.alpha_characters[
-                    Characters.character_dict['fdconvert']],
-                command=lambda: self.printout(
-                    self.row1[4]))
-
-            # Change constant button to answer
-            self.row3[6].config(
-                text=Characters.alpha_characters[
-                    Characters.character_dict['pi']],
-                command=lambda: self.printout(
-                    self.row3[6]))
-
-            self.a_toggle = 0
-
-        # If ALPHA is on, switch back to original buttons
-        elif self.a_toggle == 0 and self.toggle == 1:
-            # Change the color of ALPHA
-            self.row1[6].config(bg='#f2f2f2')
-
-            # Invert dictionary
-            self.a_converted = {value: key for (
-                key, value) in Characters.alpha_characters.items()}
-
-            # Change buttons back to original
-            self.row1[4].config(
-                text=self.a_converted[
-                    Characters.character_dict[
-                        'fpconvert']],
-                command=lambda: self.printout(
-                    self.row1[4]))
-
-            self.row3[6].config(
-                text=self.a_converted[
-                    Characters.character_dict['answer']],
-                command=lambda: self.printout(
-                    self.row3[6]))
-
-            self.a_toggle = 1
-        else:
-            pass
-
-    # For the F-D button
-    def convert(self):
-        if self.F_toggle == 1:
-            pass
-        '''Get answer output, convert it'''
-        '''
-        if label is D-F, convert from x.y to x/y form
-        if label is D-%, convert from x.y to x% form
-        if label is F-P, convert from x/y to x% form
-        '''
-
-        if self.F_toggle == 0:
-            pass
-        '''Flip function so that it does the opposite as before'''
-        '''
-        if label is D-F, convert from x/y x.y form
-        if label is D-%, convert from x% to x.y form
-        if label is F-P, convert from x% to x/y form
-        '''
-
 
 # User guide
 class Help:
@@ -1284,6 +1225,7 @@ class Help:
                                         bg="#ffffff")
         self.Help_frame.grid()
 
+        # Help text, separated into 4 texts
         self.text_top = tkinter.Label(
             self.Help_frame,
             text=self.help_file,
@@ -1343,9 +1285,9 @@ class Help:
             sticky=tkinter.NSEW)
 
         # Exit button
-        self.exit_button = Function_class.exit_button(self.Help_frame, 3,
+        self.exit_button_help = Function_class.exit_button(self.Help_frame, 3,
                                                       "Help", self.Help_window)
-        self.exit_button.grid(sticky=tkinter.SW)
+        self.exit_button_help.grid(sticky=tkinter.SW)
 
 
 # Viewing past calculations
@@ -1361,13 +1303,42 @@ class Recall:
         self.recall_frame = tkinter.Frame(self.recall_window)
         self.recall_frame.grid()
 
-        self.text1 = tkinter.Label(self.recall_frame,
-                                   text="Recall")
+        # Text
+        self.text1 = tkinter.Label(
+            self.recall_frame,
+            text="Here, you can view your past calculations!")
         self.text1.grid(row=0, column=0)
+        
+        self.text2 = tkinter.Label(
+            self.recall_frame,
+            text="Unfortunately, this is still in development")
+        
+        self.text2.grid(row=1, column=0)
+        
+        # Listbox
+        self.listbox = tkinter.Listbox(self.recall_window)
+        self.listbox.grid(column = 1,
+                          rowspan = 3,
+                          row = 0,
+                          sticky = tkinter.NSEW)
+        
+        # Clear button
+        self.clear_button = tkinter.Button(
+            self.recall_frame,
+            text='Clear file')
+        self.clear_button.grid(
+            row=4, columnspan = 3,
+            sticky=tkinter.NSEW)
+        
 
         # Exit button
-        Function_class.exit_button(self.recall_frame, 1,
-                                   "Recall", self.recall_window)
+        self.exit_button_recall = (
+            Function_class.exit_button(
+                self.recall_frame, 4,
+                "Recall", self.recall_window))
+        self.exit_button_recall.grid(
+            column = 0, row = 5, sticky = tkinter.SW)
+        
 
 
 # Exit program
