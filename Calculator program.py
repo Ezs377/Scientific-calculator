@@ -125,7 +125,7 @@ class Characters:
 
     basic_operations = [
         character_dict['add'], character_dict['minus'],
-        character_dict['divide'], character_dict['times']]        
+        character_dict['divide'], character_dict['times']]
 
     complex_before = [
         character_dict['factorial'], character_dict['squared']]
@@ -135,7 +135,7 @@ class Characters:
         character_dict['tan'], character_dict['log'],
         character_dict['ln'], character_dict['inversesin'],
         character_dict['inversecos'], character_dict['inversetan'],
-        character_dict['squareroot'], character_dict['root']]    
+        character_dict['squareroot'], character_dict['root']]
 
     brackets = [
         character_dict['lbracket'],
@@ -146,12 +146,13 @@ class Characters:
         4: '4', 5: '5', 6: '6', 7: '7',
         8: '8', 9: '9', 0: '0',
         '.': '.'}
-    
+
     constants = [character_dict['pi'],
                  character_dict['euler']]
 
-    constants_def = {character_dict['pi']: math.pi,
-                 character_dict['euler']: math.e}
+    constants_def = {
+        character_dict['pi']: math.pi,
+        character_dict['euler']: math.e}
 
 
 # Main class
@@ -175,7 +176,7 @@ class Main:
         functions = [Operations, Recall, Help, Exit]
         rowno = 1
         columnno = 0
-        
+
         # History file
         self.history_file = open('History.txt', 'a')
 
@@ -349,7 +350,7 @@ class Operations:
                 command=lambda index=index: self.printout(
                     self.row4[index]))
 
-        # Change command for squared button 
+        # Change command for squared button
         self.row4[4].config(
             command=lambda: self.printout_true(
                 self.characters.character_dict['squared']))
@@ -460,18 +461,18 @@ class Operations:
         self.temp_operator = []  # List of operators in input line
         self.temp_integer = []  # List of digits in input line
         self.compiled_number = []  # List of compiled numbers
-        self.bracket_count = 0 # Amount of bracket pairs
+        self.bracket_count = 0  # Amount of bracket pairs
         self.error_status = 0  # Error state
         self.to_calculate = self.added_list[:]
-        
+
         '''1. Check for errors
-           2. If errors, force user to change input. Else, continue to next step
+           2. If errors, stop. Else, continue to next step
            3. If brackets detected, search for most innermost pair
            4. Compile into an equation in a list
            5. Process equation to get a result
-           6. If brackets detected, replace bracket pair with output value
+           6. If brackets detected, replace with output value
            7. Repeat all steps if more bracket pairs detected'''
-        
+
         # Check for errors in input
         '''This would ensure the input is able to be processed.
         and gives amount of bracket pairs if any are present'''
@@ -480,10 +481,11 @@ class Operations:
         # If there are brackets in input
         if (Characters.character_dict['lbracket'] in
             self.added_list or Characters.character_dict['rbracket'] in
-            self.to_calculate): 
+                self.to_calculate):
             self.bracket_check(self.to_calculate)
 
-        # Scan for innermost bracket pair (right now it only searches for one pair)
+        # Scan for innermost bracket pair (right now
+        # it only searches for one pair)
         while self.bracket_count > 0:
             self.lbracket_index = 0
             self.rbracket_index = 0
@@ -497,7 +499,7 @@ class Operations:
             self.bracket_result = self.calculate(self.bracket_equation)
 
             # Replace brackets with processed equation
-            self.to_calculate[self.lbracket_index:self.rbracket_index+1] = [self.bracket_result]
+            self.to_calculate[self.lbracket_index:self.rbracket_index + 1] = [self.bracket_result]
 
             # Reduce bracket counts
             self.bracket_count -= 1
@@ -509,21 +511,23 @@ class Operations:
 
         # If an error has not been raised
         if not self.error_status:
+            # If no operations done
             if not self.temp_operator and self.compiled_number:
-                print ('single digit,', self.answer)
+                # Printout answer
+                self.print_result(self.answer[0])
 
             # If no input
             elif not self.compiled_number:
                 pass
 
             else:
+                # Finalised answer
                 self.final_answer = self.calculate(self.processed)
-                print ('final', self.final_answer)
+                # Printout answer
+                self.print_result(self.final_answer)
         else:
             # If error detected, do nothing
             pass
-        '''printout answer'''
-        # self.print_result()        
 
     # Process input and get an equation (compiling)
     def get_equation(self, List):
@@ -533,7 +537,7 @@ class Operations:
 
         # Separate into operators and digits
         for index, term in enumerate(List):
-            
+
             try:
                 # Convert input to integer
                 int_term = int(term)
@@ -541,15 +545,15 @@ class Operations:
                 # Add to number list if it is an integer
                 if (int(term) in Characters.integer_characters):
                     self.temp_integer.append(str(term))
-                
+
                 elif term == float(term):
                     self.temp_integer.append(str(term))
-                
+
                 else:
                     self.temp_integer.append(str(term))
 
             except:
-                
+
                 # If operation detected, join numbers together
                 if term in Characters.operation_characters:
                     # Join previous integers together into
@@ -564,8 +568,9 @@ class Operations:
 
                 # If a constant
                 elif str(term) in Characters.constants:
-                    self.temp_integer.append(str(Characters.constants_def[term]))
-                    
+                    self.temp_integer.append(
+                        str(Characters.constants_def[term]))
+
                 # If character is float (i.e. decimal)
                 else:
                     self.temp_integer.append(str(term))
@@ -574,7 +579,7 @@ class Operations:
             if index == len(List) - 1:
                 self.compiled_number.append(''.join(self.temp_integer))
                 self.temp_integer = []
-    
+
         # If there are operators
         if self.temp_operator:
             '''Create a list that is the exact length of the
@@ -582,23 +587,23 @@ class Operations:
                 list can perfectly hold the combined values
                 of both lists'''
             self.processed = [None] * (len(
-                    self.compiled_number) + len(self.temp_operator))
+                self.compiled_number) + len(self.temp_operator))
 
             # For every second value in list, insert a number
             self.processed[::2] = self.compiled_number
-    
+
             # Starting from position 1, for every second value
             # from list, insert an operator
             self.processed[1::2] = self.temp_operator
-            
+
             # Remove extra characters if present
             if '' in self.processed:
                 self.processed.remove('')
-            
+
         else:
             if len(self.compiled_number) == 1:
                 self.processed = self.compiled_number[:]
-    
+
         '''List with inputted characters
             - self.added_list = list of inputs
             - self.temp_integer = temporary list of
@@ -617,7 +622,7 @@ class Operations:
 
         for index, char in enumerate(List):
             if index != 0 and char == Characters.character_dict['lbracket']:
-                if List[index-1] not in Characters.operation_characters:
+                if List[index - 1] not in Characters.operation_characters:
                     self.error('syntax')
                     return ('error')
 
@@ -630,7 +635,6 @@ class Operations:
                 # If it's a right bracket
                 elif char == Characters.character_dict['rbracket']:
                     self.rbracket_count += 1
-            
 
         # If there are brackets present
         if self.lbracket_count and self.rbracket_count > 0:
@@ -639,7 +643,7 @@ class Operations:
                 # Add one count to number of paired brackets
                 # lbracket count used
                 self.bracket_count = self.lbracket_count
-        
+
         # Errors involving brackets
         # If brackets are uneven, thus open
         if self.lbracket_count != self.rbracket_count:
@@ -658,7 +662,7 @@ class Operations:
 
         # Check each item in list
         for index, a in enumerate(List):
-            
+
             # Check for operators/dot
             if (a in Characters.operation_characters or
                     a == Characters.character_dict['dot']):
@@ -696,11 +700,11 @@ class Operations:
                         List[(List.index(
                             a)) + 1] in Characters.complex_before):
                         if (
-                            List[List.index(
-                                a)] in Characters.basic_operations and
-                            List[(List.index(a))+1] in
-                            Characters.complex_before):
-                            
+                                List[List.index(
+                                    a)] in Characters.basic_operations and
+                                List[(List.index(a)) + 1] in
+                                Characters.complex_before):
+
                             # Raise error and clear screen
                             self.error('syntax')
 
@@ -711,31 +715,27 @@ class Operations:
             # If an operator is the last character
             elif index == len(List) - 1:
                 if (a in Characters.complex_after or
-                    a in Characters.basic_operations):
+                        a in Characters.basic_operations):
                     # Raise error and clear screen
                     self.error('syntax')
-                        
 
     # The process of searching for bracket pairs
     def bracket_analysis(self, List):
-        '''CURERNTLY: LEFT BRACKET SCANNER WORKS,
-        BUT RIGHT BRACKET GOES TO THE FIRST RIGHT BRACKET,
-        INSTEAD OF GOING TO THE RIGHT BRACKET AFTER THE INNERMOST LEFT BRACKET'''
         # Look for brackets
         if Characters.character_dict[
-            'lbracket'] in List:
+                'lbracket'] in List:
 
             # Variables
-            self.bracket = [] # List of equation within brackets
-            self.lbracket_index = 0 # Index of left bracket
-            self.rbracket_index = 0 # Index of right bracket
+            self.bracket = []  # List of equation within brackets
+            self.lbracket_index = 0  # Index of left bracket
+            self.rbracket_index = 0  # Index of right bracket
 
             # Searches for the innermost left bracket
             # Search through the list backwards
             for i in reversed(range(len(self.to_calculate))):
                 # If the item is a left bracket
                 if self.to_calculate[i] == Characters.character_dict[
-                    'lbracket']:
+                        'lbracket']:
                     self.innermost_bracket = i
                     self.lbracket_index = i
                     break
@@ -750,14 +750,14 @@ class Operations:
                 if a == Characters.character_dict['rbracket']:
 
                     # Stop adding characters
-                    self.rbracket_index = ((self.lbracket_index)+index)
+                    self.rbracket_index = ((self.lbracket_index) + index)
                     break
 
             # Remove the bracket characters from list
             while (Characters.character_dict[
-                'lbracket'] in self.bracket or
-                   Characters.character_dict[
-                       'lbracket'] in self.bracket):              
+                    'lbracket'] in self.bracket or
+                    Characters.character_dict[
+                    'lbracket'] in self.bracket):
                 if Characters.character_dict['lbracket'] in self.bracket:
                     self.bracket.remove(Characters.character_dict['lbracket'])
 
@@ -767,20 +767,19 @@ class Operations:
             # The result of the characters in innermost brackets,
             # without the brackets
             return self.bracket
-       
 
     # Calculations
     def calculate(self, List):
         # Remove blanks
         if '' in List:
-            List.remove('')        
-        
+            List.remove('')
+
         # Scan every character in equation
-        self.final_equation = List[:] # Copy of original list to use
-        
+        self.final_equation = List[:]  # Copy of original list to use
+
         for index, x in enumerate(self.final_equation):
-            
-            # Order: Exponents, Factorial, Trigonometry and Logs, 
+
+            # Order: Exponents, Factorial, Trigonometry and Logs,
             # Multiply/Divide, Addition/Minus
 
             '''Calculations'''
@@ -797,29 +796,30 @@ class Operations:
                         try:
                             # If number before factorial is whole,
                             # calculate
-                            number = int(self.final_equation[index-1])
+                            number = int(self.final_equation[index - 1])
                             total = number
                             # Factorial process
                             total = math.factorial(total)
-                            # Replace the number and ! character with the result
-                            self.final_equation[index-1:index+1] = [total]
+                            # Replace the number and ! character
+                            # with the result
+                            self.final_equation[index - 1:index + 1] = [total]
                         except:
                             # If a float is detected before factorial
                             self.error('math')
-                    
+
                     '''If squared symbol detected'''
                     if a == Characters.character_dict['squared']:
                         # Multiply the number by itself
                         total = float(self.final_equation[
-                            index-1])*float(self.final_equation[index-1])
+                            index - 1]) * float(self.final_equation[index - 1])
                         # Replace symbol and number before the symbol
                         # with result
-                        self.final_equation[index-1:index+1] = [total]
-            
-            # For all other complex operators, there should 
-            # be either 2 or 3 characters processed, 
+                        self.final_equation[index - 1:index + 1] = [total]
+
+            # For all other complex operators, there should
+            # be either 2 or 3 characters processed,
             # depending on the operator
-            for index, a in enumerate (self.final_equation):
+            for index, a in enumerate(self.final_equation):
                 # If character is a complex operator
                 if a in Characters.complex_after:
                     '''If square root is a symbol'''
@@ -827,97 +827,94 @@ class Operations:
 
                         # Square root the number after the symbol
                         # (Only positive numbers, otherwise raise error
-                        if float(self.final_equation[index+1]) <= 0:
+                        if float(self.final_equation[index + 1]) <= 0:
                             self.error('math')
                         else:
                             total = math.sqrt(float(
-                                self.final_equation[index+1]))
-                            self.final_equation[index:index+2] = [total]
+                                self.final_equation[index + 1]))
+                            self.final_equation[index:index + 2] = [total]
 
                     '''If sin is a symbol'''
                     # Python assumes input is in radians for trigonometry
                     if a == Characters.character_dict['sin']:
                         # Convert input to radians first
                         total = math.sin(math.radians(
-                            float(self.final_equation[index+1])))
-                        self.final_equation[index:index+2] = [total]
+                            float(self.final_equation[index + 1])))
+                        self.final_equation[index:index + 2] = [total]
 
                     '''If inverse sin is a symbol'''
                     if a == Characters.character_dict['inversesin']:
 
                         # If value is outside limit
                         if float(self.final_equation[
-                            index+1]) > 1 or float(
-                                self.final_equation[index+1]) < -1:
+                            index + 1]) > 1 or float(
+                                self.final_equation[index + 1]) < -1:
                             self.error('math')
 
                         # Convert output to degrees
                         else:
                             total = math.asin(float(
-                                self.final_equation[index+1]))
+                                self.final_equation[index + 1]))
                             total = math.degrees(total)
-                            self.final_equation[index:index+2] = [total]                     
-                    
-                    
-                    
+                            self.final_equation[index:index + 2] = [total]
+
                     '''If cos is a symbol'''
                     if a == Characters.character_dict['cos']:
                         # Convert input to radians
                         total = math.cos(math.radians(
-                            float(self.final_equation[index+1])))
-                        self.final_equation[index:index+2] = [total]                     
-                    
-                    
+                            float(self.final_equation[index + 1])))
+                        self.final_equation[index:index + 2] = [total]
+
                     '''If inverse cos is a symbol'''
                     if a == Characters.character_dict['inversecos']:
 
                         # If value is outside limit
                         if float(self.final_equation[
-                            index+1]) > 1 or float(
-                                self.final_equation[index+1]) < -1:
+                            index + 1]) > 1 or float(
+                                self.final_equation[index + 1]) < -1:
                             self.error('math')
 
                         else:
-                            # Use inverse cos, which has an input range of -1<0<1
+                            # Use inverse cos, which has an
+                            # input range of -1<0<1
                             total = math.acos(float(
-                                self.final_equation[index+1]))
+                                self.final_equation[index + 1]))
                             total = math.degrees(total)
-                            self.final_equation[index:index+2] = [total]
+                            self.final_equation[index:index + 2] = [total]
 
                     '''If tan is a symbol'''
                     if a == Characters.character_dict['tan']:
                         # Use tan, convert input to radians
                         # first to get degree output
                         total = math.tan(math.radians(
-                            float(self.final_equation[index+1])))
-                        self.final_equation[index:index+2] = [total]                     
-                    
+                            float(self.final_equation[index + 1])))
+                        self.final_equation[index:index + 2] = [total]
+
                     '''If inverse tan is a symbol'''
                     if a == Characters.character_dict['inversetan']:
                         # Use inverse tan, returns result in radians
                         total = math.atan((float(
-                            self.final_equation[index+1])))
+                            self.final_equation[index + 1])))
                         # Convert to degrees
                         total = math.degrees(total)
                         self.final_equation[
-                            index:index+2] = [total]                     
+                            index:index + 2] = [total]
 
                     '''If log is a symbol'''
                     if a == Characters.character_dict['log']:
                         # Use log base 10
                         total = math.log10(float(
-                            self.final_equation[index+1]))
+                            self.final_equation[index + 1]))
                         self.final_equation[
-                            index:index+2] = [total]
-                    
+                            index:index + 2] = [total]
+
                     '''If Ln is a symbol'''
                     if a == Characters.character_dict['ln']:
                         # Use natural log
                         total = math.log(float(
-                            self.final_equation[index+1]))
+                            self.final_equation[index + 1]))
                         self.final_equation[
-                            index:index+2] = [total]
-
+                            index:index + 2] = [total]
 
             # For powers and roots, which take 2 number values
             # If power is a symbol
@@ -926,28 +923,32 @@ class Operations:
                     'power'] in self.final_equation) or (
                         Characters.character_dict[
                             'root'] in self.final_equation):
-                for index, a in enumerate (self.final_equation):
+                for index, a in enumerate(self.final_equation):
                     if a == Characters.character_dict['power']:
-    
-                        # Raise the number before symbol to the number after symbol
+
+                        # Raise the number before symbol to
+                        # the number after symbol
                         # i.e. before ^ after
                         total = float(self.final_equation[
-                            index-1])**float(self.final_equation[index+1])
-    
+                            index - 1])**float(self.final_equation[index + 1])
+
                         # Replace the 3 characters with the result
-                        self.final_equation[index-1:index+2] = [total]
-    
+                        self.final_equation[index - 1:index + 2] = [total]
+
                     if a == Characters.character_dict['root']:
-                        if float(self.final_equation[index+1]) <= 0:
-                            '''If the error doesn't reset program, insert a try&except'''
-                            self.error('math')
+                        if float(
+                            self.final_equation[
+                                index + 1]) <= 0:
+                                    # If the error doesn't reset
+                                    # program, insert a try&except
+                                    self.error('math')
                         else:
                             # Nth root of X == X^(1/N)
                             total = float(
                                 self.final_equation[
-                                    index+1])**(1/(
-                                        float(self.final_equation[index-1])))
-                            self.final_equation[index-1:index+2] = [total]
+                                    index + 1])**(1 / (
+                                        float(self.final_equation[index - 1])))
+                            self.final_equation[index - 1:index + 2] = [total]
                             break
 
             # For multiply/divide. There should only be 3
@@ -957,54 +958,54 @@ class Operations:
                     'times'] in self.final_equation) or (
                         Characters.character_dict[
                             'divide'] in self.final_equation):
-                    for index, a in enumerate (self.final_equation):
+                    for index, a in enumerate(self.final_equation):
                         '''If multiply (x) is a symbol'''
                         if a == Characters.character_dict['times']:
                                 total = float(
                                     self.final_equation[
-                                        index-1])*float(
+                                        index - 1]) * float(
                                             self.final_equation[
-                                                index+1])
+                                                index + 1])
                                 self.final_equation[
-                                    index-1:index+2] = [total]
+                                    index - 1:index + 2] = [total]
                                 break
 
                         '''If divide (\u00f7) is a symbol'''
                         if a == Characters.character_dict['divide']:
                                 total = float(
                                     self.final_equation[
-                                        index-1])/float(
+                                        index - 1]) / float(
                                             self.final_equation[
-                                                index+1])
+                                                index + 1])
                                 self.final_equation[
-                                    index-1:index+2] = [total]
+                                    index - 1:index + 2] = [total]
                                 break
-            
+
             '''Adding/minus is same procedure as times/divide'''
             while (
                 Characters.character_dict['add'] in
                 self.final_equation or Characters.character_dict[
                     'minus'] in self.final_equation):
-                    for index, a in enumerate (self.final_equation):
+                    for index, a in enumerate(self.final_equation):
                         '''If addition (+) is a symbol'''
                         if a == Characters.character_dict['add']:
                                 total = float(
                                     self.final_equation[
-                                        index-1])+float(
+                                        index - 1]) + float(
                                             self.final_equation[
-                                                index+1])
+                                                index + 1])
                                 self.final_equation[
-                                    index-1:index+2] = [total]
+                                    index - 1:index + 2] = [total]
                                 break
 
                         '''If subtraction (-) is a symbol'''
                         if a == Characters.character_dict['minus']:
                                 total = float(
                                     self.final_equation[
-                                        index-1])-float(
-                                            self.final_equation[index+1])
+                                        index - 1]) - float(
+                                            self.final_equation[index + 1])
                                 self.final_equation[
-                                    index-1:index+2] = [total]
+                                    index - 1:index + 2] = [total]
                                 break
 
             # Return answer
@@ -1045,9 +1046,10 @@ class Operations:
                         o_dict[x]]))
 
         # Complex arithmetics
-        cplx_dict = {'!':'factorial', 's':'sin',
-                     'c':'cos', 't':'tan',
-                     'l':'log', 'n':'ln', 'p':'pi'}
+        cplx_dict = {'!': 'factorial', 's': 'sin',
+                     'c': 'cos', 't': 'tan',
+                     'l': 'log', 'n': 'ln', 'p': 'pi',
+                     '^': 'power'}
         for t in cplx_dict:
             self.operation_window.bind(
                 str(t), lambda command,
@@ -1083,7 +1085,7 @@ class Operations:
         self.textbox.config(state=tkinter.DISABLED)
 
     # For output result
-    def print_result(self):
+    def print_result(self, answer):
         # Turn on textbox
         # Width = 30 chars
         self.spacer = []
@@ -1094,8 +1096,7 @@ class Operations:
             self.textbox.insert('end', '\n')
             self.textbox.insert('end', '=')
 
-            '''Change this to self.result when done'''
-            self.textbox.insert('end', "Equals")
+            self.textbox.insert('end', answer)
 
         except:
             self.error('Unknown')
@@ -1199,6 +1200,7 @@ class Operations:
         else:
             pass
 
+
 # User guide
 class Help:
     def __init__(self):
@@ -1210,7 +1212,7 @@ class Help:
 
         self.file3 = open('Right help.txt', 'r')
         self.r_help = (self.file3.read())
-        
+
         self.file4 = open('Bottom help.txt', 'r')
         self.b_help = (self.file4.read())
 
@@ -1281,12 +1283,12 @@ class Help:
             pady=10)
 
         self.text_bottom.grid(
-            row=2, columnspan = 2,
+            row=2, columnspan=2,
             sticky=tkinter.NSEW)
 
         # Exit button
-        self.exit_button_help = Function_class.exit_button(self.Help_frame, 3,
-                                                      "Help", self.Help_window)
+        self.exit_button_help = Function_class.exit_button(
+            self.Help_frame, 3, "Help", self.Help_window)
         self.exit_button_help.grid(sticky=tkinter.SW)
 
 
@@ -1308,28 +1310,27 @@ class Recall:
             self.recall_frame,
             text="Here, you can view your past calculations!")
         self.text1.grid(row=0, column=0)
-        
+
         self.text2 = tkinter.Label(
             self.recall_frame,
             text="Unfortunately, this is still in development")
-        
+
         self.text2.grid(row=1, column=0)
-        
+
         # Listbox
         self.listbox = tkinter.Listbox(self.recall_window)
-        self.listbox.grid(column = 1,
-                          rowspan = 3,
-                          row = 0,
-                          sticky = tkinter.NSEW)
-        
+        self.listbox.grid(column=1,
+                          rowspan=3,
+                          row=0,
+                          sticky=tkinter.NSEW)
+
         # Clear button
         self.clear_button = tkinter.Button(
             self.recall_frame,
             text='Clear file')
         self.clear_button.grid(
-            row=4, columnspan = 3,
+            row=4, columnspan=3,
             sticky=tkinter.NSEW)
-        
 
         # Exit button
         self.exit_button_recall = (
@@ -1337,8 +1338,7 @@ class Recall:
                 self.recall_frame, 4,
                 "Recall", self.recall_window))
         self.exit_button_recall.grid(
-            column = 0, row = 5, sticky = tkinter.SW)
-        
+            column=0, row=5, sticky=tkinter.SW)
 
 
 # Exit program

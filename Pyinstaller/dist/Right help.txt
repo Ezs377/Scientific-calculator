@@ -1,0 +1,10 @@
+All buttons correspond to their Shift and Alpha counterparts
+In this case, AC, F-D, and Xsquared functions are unbinded
+backspace  button = DEL
+!  button = Factorial
+s  key = Sin
+c  key = Cos
+t  key = Tan
+l  key = Log
+n  key = Ln
+p  key = Pi

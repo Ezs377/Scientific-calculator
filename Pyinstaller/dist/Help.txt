@@ -1,0 +1,7 @@
+Welcome! This calculator has been designed to perform basic maths, along with complex mathmatics. 
+For the calculator, click the Operations button
+For viewing past calculations, click the Recall button
+For help and information about the calculator, click the Help button
+To exit the calculator, click the Exit button
+The recall function may be used to get the answers to previous calculations
+Below is a list of keyboard shortcuts:
