@@ -80,6 +80,7 @@ class Function_class:
 
 # Import Unicode
 class Characters:
+    # Dictionary containing full list of characters and their unicode for display
     character_dict = {
         'euler': "\u2107", 'pi': "\u03c0",
         'squared': "\u00b2", 'lbracket': '(', 'rbracket': ')', 'log': 'log ',
@@ -98,6 +99,7 @@ class Characters:
         'xsquared': 'X' + "\u00b2", 'fpconvert': 'F-' + '\u0025',
         'dpconvert': 'D-' + '\u0025', 'answer': 'Ans'}
 
+    # List of characters and their switched characters when using shift button
     shift_characters = {
         character_dict['sin']: character_dict['inversesin'],
         character_dict['cos']: character_dict['inversecos'],
@@ -107,10 +109,12 @@ class Characters:
         character_dict['pi']: character_dict['euler'],
         character_dict['fdconvert']: character_dict['dpconvert']}
 
+    # List of characters and their switched characters when using alpha button
     alpha_characters = {
         character_dict['fdconvert']: character_dict['fpconvert'],
         character_dict['pi']: character_dict['answer']}
 
+    # List of characters used for mathmatical operations
     operation_characters = [
         character_dict['add'], character_dict['minus'],
         character_dict['divide'], character_dict['times'],
@@ -123,13 +127,16 @@ class Characters:
         character_dict['inversesin'], character_dict['inversecos'],
         character_dict['inversetan']]
 
+    # List of characters used for basic math operations
     basic_operations = [
         character_dict['add'], character_dict['minus'],
         character_dict['divide'], character_dict['times']]
 
+    # List of operations that require the number value to be before the character
     complex_before = [
         character_dict['factorial'], character_dict['squared']]
 
+    # List of operations that require the number value to be after the character
     complex_after = [
         character_dict['sin'], character_dict['cos'],
         character_dict['tan'], character_dict['log'],
@@ -137,19 +144,23 @@ class Characters:
         character_dict['inversecos'], character_dict['inversetan'],
         character_dict['squareroot'], character_dict['root']]
 
+    # List of bracket characters
     brackets = [
         character_dict['lbracket'],
         character_dict['rbracket']]
 
+    # List of integer characters
     integer_characters = {
         1: '1', 2: '2', 3: '3',
         4: '4', 5: '5', 6: '6', 7: '7',
         8: '8', 9: '9', 0: '0',
         '.': '.'}
 
+    # List of constants
     constants = [character_dict['pi'],
                  character_dict['euler']]
 
+    # List of constant definitions
     constants_def = {
         character_dict['pi']: math.pi,
         character_dict['euler']: math.e}
@@ -229,7 +240,7 @@ class Main:
 # For calculator calculations
 class Operations:
     def __init__(self):
-        # This disables the corresponding button in the main menu
+        # This disables the corresponding button in the main menu after being clicked
         button_dict["Operations"].config(
             state=tkinter.DISABLED)
 
@@ -281,7 +292,7 @@ class Operations:
         self.allrows = []
         self.added_list = []
 
-        # Row 1
+        # ROW 1
         self.namelist = [
             'clear', 'delete', 'factorial', 'add', 'alpha']
         Function_class.create_row(self.row1, self.namelist, 1,
@@ -317,9 +328,9 @@ class Operations:
         self.shift_button.config(
             command=lambda: self.shift_convert())
 
-        # Row 2
-        self.namelist = [
-            7, 8, 9, 'minus', 'sin', 'cos', 'tan']
+
+        # ROW 2
+        self.namelist = [7, 8, 9, 'minus', 'sin', 'cos', 'tan']
         Function_class.create_row(self.row2, self.namelist, 2,
                                   self.operation_frame,
                                   0, lambda: None)
@@ -329,7 +340,9 @@ class Operations:
             button.config(
                 command=lambda index=index: self.printout(
                     self.row2[index]))
-        # Row 3
+        
+
+        # ROW 3
         self.namelist = [4, 5, 6, 'times', 'log', 'ln', 'pi']
         Function_class.create_row(self.row3, self.namelist, 3,
                                   self.operation_frame,
@@ -339,7 +352,9 @@ class Operations:
             button.config(
                 command=lambda index=index: self.printout(
                     self.row3[index]))
-        # Row 4
+       
+
+        # ROW 4
         self.namelist = [1, 2, 3, 'divide', 'xsquared', 'power']
         Function_class.create_row(self.row4, self.namelist, 4,
                                   self.operation_frame,
@@ -355,7 +370,8 @@ class Operations:
             command=lambda: self.printout_true(
                 self.characters.character_dict['squared']))
 
-        # Row 5
+
+        # ROW 5
         self.namelist = [0, 'dot', 'lbracket', 'rbracket']
         Function_class.create_row(self.row5, self.namelist, 5,
                                   self.operation_frame, 2, lambda: None)
@@ -1292,7 +1308,7 @@ class Help:
         self.exit_button_help.grid(sticky=tkinter.SW)
 
 
-# Viewing past calculations
+# Viewing past calculations (not finished)
 class Recall:
     def __init__(self):
         # This disables the corresponding button in the main menu
